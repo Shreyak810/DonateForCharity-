@@ -1,0 +1,7 @@
+# the name of the files added in the gitignore will not be added to the github
+
+node_modules
+.env
+.env.e2e
+.vscode
+dist
