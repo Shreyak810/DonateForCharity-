@@ -43,7 +43,11 @@ router.post(
         
         // 1. upload the images to tge cloudinary
  
-        const uploadPromises = imageFiles.map(async(image)=>{
+        const imageUrls = await uploadImages(imageFiles);
+        
+        //the upload images function contains these stuff
+        
+        /*const uploadPromises = imageFiles.map(async(image)=>{
             const b64 = Buffer.from(image.buffer).toString("base64");
             let dataURI = "data:" + image.mimetype + ";base64," + b64;
             const res = await cloudinary.v2.uploader.upload(dataURI);
@@ -52,7 +56,8 @@ router.post(
         
         // it is going to wait for all the images to be get uploaded
         // 2. if upload was successful, add the urls to the new hotel
-        const imageUrls = await Promise.all(uploadPromises);
+        const imageUrls = await Promise.all(uploadPromises); */
+
         newHotel.imageUrls = imageUrls;
         newHotel.lastUpdated = new Date();
         newHotel.userId = req.userId;
@@ -80,6 +85,72 @@ router.get("/", verifyToken, async(req: Request, res: Response)=>{
     {
         res.status(500).json({message: "Error fetching the NGOs"});
     }
-})
+});
+
+// it mentions that in the url anything after the '/' will be the id of the hotel
+router.get("/:id", verifyToken, async(req: Request, res: Response)=>{
+    // /api/my-ngos/982385860459
+    const id = req.params.id.toString();
+    try{
+        const hotel = await Hotel.findOne({
+            _id: id,
+            userId: req.userId
+        })
+        res.json(hotel);
+    }catch (error){
+        res.status(500).json({message: "Error fetching ngos"});
+    }
+});
+
+router.put(
+    "/:hotelId", 
+    verifyToken, 
+    upload.array("imageFiles"), 
+    async(req: Request, res: Response)=>{
+        try{
+            const updatedHotel: HotelType = req.body;
+            updatedHotel.lastUpdated = new Date();
+
+            const hotel = await Hotel.findOneAndUpdate({
+                _id: req.params.hotelId,
+                userId: req.userId,
+            }, updatedHotel, {new: true});  //new: true means the hotel variable is going to have most updated properties.
+
+            if(!hotel){
+                return res.status(404).json({message: "NGO not found"});
+            }
+
+            const files = req.files as Express.Multer.File[];
+
+            // this will upload the new images to cloudinary and will give us back the urls
+            const updatedImageUrls = await uploadImages(files);
+
+            hotel.imageUrls = [
+                ...updatedImageUrls, 
+                ...(updatedHotel.imageUrls || [])  //here we are handling the case where the user has right to delete the image previously uploaded.
+            ];
+
+            await hotel.save();
+            res.status(201).json(hotel);
+        } catch(error){
+            res.status(500).json({message: "Something went wrong"});
+        }
+    });
+
+
+
+    async function uploadImages(imageFiles: Express.Multer.File[]) {
+        const uploadPromises = imageFiles.map(async (image) => {
+            const b64 = Buffer.from(image.buffer).toString("base64");
+            let dataURI = "data:" + image.mimetype + ";base64," + b64;
+            const res = await cloudinary.v2.uploader.upload(dataURI);
+            return res.url;
+        });
+    
+        // it is going to wait for all the images to be get uploaded
+        // 2. if upload was successful, add the urls to the new hotel
+        const imageUrls = await Promise.all(uploadPromises);
+        return imageUrls;
+    }
 
 export default router;

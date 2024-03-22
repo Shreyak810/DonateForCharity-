@@ -95,4 +95,45 @@ export const fetchMyHotels = async (): Promise<HotelType[]> =>{
     }
 
     return response.json();
-}
+};
+
+export const fetchMyHotelById = async (hotelId: string): Promise<HotelType> =>{
+    const response = await fetch(`${API_BASE_URL}/api/my-ngos/${hotelId}`, {
+        credentials: "include"
+    });
+    if(!response.ok){
+        throw new Error("Error fetching NGOs")
+    }
+
+    return response.json();
+
+};
+
+export const updateMyHotelById = async (hotelFormData: FormData)=>{
+    const response = await fetch(`${API_BASE_URL}/api/my-ngos/${hotelFormData.get("hotelId")}`, {
+        method: "PUT",
+        body: hotelFormData,
+        credentials: "include",
+    });
+
+    if(!response.ok){
+        throw new Error("Failed to update NGO");
+    }
+
+    return response.json();
+};
+
+
+// A Promise in JavaScript represents a value that may be available now, in the future, or never. It's a way to handle asynchronous operations. Here's what the Promise does in the context of your fetchMyHotelById function:
+
+// Asynchronous Behavior:
+
+// When you make an asynchronous call, such as a network request with fetch, the function returns a Promise. This means the function doesn't immediately return the result. Instead, it returns a promise to supply the result at some point in the future.
+// Resolution:
+
+// The Promise can be in one of three states: pending, fulfilled, or rejected.
+// If the asynchronous operation is successful, the promise is fulfilled with a value. In your case, when the fetch operation successfully retrieves data, the promise resolves with the hotel/NGO data.
+// Handling Asynchronous Results:
+
+// When working with promises, you can use the .then() method to handle the resolved value (in this case, the hotel/NGO data) once it becomes available.
+// You can also use .catch() to handle errors if the promise is rejected, such as when there's a network issue or the server returns an error response.

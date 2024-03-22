@@ -10,6 +10,7 @@ import SignIn from "./pages/SignIn";
 import AddHotel from "./pages/AddHotel";
 import { useAppContext } from "./contexts/AppContext";
 import MyHotels from "./pages/MyHotels";
+import EditHotel from "./pages/EditHotel";
 // import Register from "./pages/Register";
 // import SignIn from "./pages/SignIn";
 // import AddHotel from "./pages/AddHotel";
@@ -73,14 +74,14 @@ const App = () => {
                 </Layout>
               }
             />
-            {/* <Route
-              path="/edit-hotel/:hotelId"
+            <Route
+              path="/edit-ngo/:hotelId"
               element={
                 <Layout>
                   <EditHotel />
                 </Layout>
               }
-            /> */}
+            />
             <Route
               path="/my-ngos"
               element={

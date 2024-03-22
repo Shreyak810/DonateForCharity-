@@ -4,6 +4,8 @@ import TypeSection from "./TypeSection";
 import FacilitiesSection from "./FacilitiesSection";
 import GuestsSection from "./GuestsSection";
 import ImagesSection from "./ImagesSection";
+import { HotelType } from "../../../../backend/src/shared/types";
+import { useEffect } from "react";
 
 export type HotelFormData = {
     name: string;
@@ -15,23 +17,37 @@ export type HotelFormData = {
     starRating: number;
     facilities: string[];
     imageFiles: FileList;
+    imageUrls: string[];
     adultCount: number;
     childCount: number;
 };
 
 type Props = {
+    hotel?: HotelType
     onSave: (hotelFormData: FormData)=> void;
     isLoading: boolean;
 }
 
-const ManageHotelForm = ({onSave, isLoading} : Props) => {
+const ManageHotelForm = ({onSave, isLoading, hotel} : Props) => {
     const formMethods = useForm<HotelFormData>();
-    const {handleSubmit} = formMethods;
+    const {handleSubmit, reset} = formMethods; //reset is used to reset the form with new data
+   
+    // whenever this ngo will recieve new data or changes its form, then this useEffect hook is initialized
+    useEffect(()=>{
+        reset(hotel);
+    }, [hotel, reset]);
+
+//     The useEffect hook includes [hotel, reset] as its dependency array. This specifies that the effect should re-run whenever either the hotel object or the reset function changes. This ensures that the form is always in sync with the latest data from the hotel object.
+//    In summary, this useEffect hook ensures that whenever the hotel object changes, the form is reset with the new data from the hotel. It helps maintain synchronization between the form and the hotel data.
 
     const onSubmit = handleSubmit((formDataJson: HotelFormData)=>{
         // create a new FormData object & call out API
         console.log(formDataJson);
         const formData = new FormData();
+        if(hotel){
+            formData.append("hotelId", hotel._id);
+        }
+
         formData.append("name", formDataJson.name);
         formData.append("city", formDataJson.city);
         formData.append("country", formDataJson.country);
@@ -45,6 +61,14 @@ const ManageHotelForm = ({onSave, isLoading} : Props) => {
         formDataJson.facilities.forEach((facility, index)=>{
             formData.append(`facilities[${index}]`, facility)
         })
+
+        // [image1.jpeg, image1.jpeg, image1.jpeg]
+        // imageUrls = [iamge1.jpeg]
+        if(formDataJson.imageUrls){
+            formDataJson.imageUrls.forEach((url, index)=>{
+                formData.append(`imageUrls[${index}]`, url);
+            });
+        }
 
         Array.from(formDataJson.imageFiles).forEach((imageFile)=>{
             formData.append(`imageFiles`, imageFile);
