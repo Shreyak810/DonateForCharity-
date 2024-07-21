@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import {v2 as cloudinary} from 'cloudinary';
 import myNgoRoutes from './routes/my-ngos';
+import hotelRoutes from "./routes/ngos";
 
 // this is the 1st file which runs when the server starts
 
@@ -43,6 +44,7 @@ app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/my-ngos", myNgoRoutes);
+app.use("/api/ngos", hotelRoutes);
 
 app.get("*", (req: Request, res: Response)=>{
   res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
